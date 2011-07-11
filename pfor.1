@@ -1,0 +1,642 @@
+.rn '' }`
+''' $RCSfile: pfor.1,v $$Revision: 1.1.1.1 $$Date: 1998/07/13 23:51:42 $
+'''
+''' $Log: pfor.1,v $
+''' Revision 1.1.1.1  1998/07/13 23:51:42  rocky
+''' Initial import
+'''
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH PFOR 1 "perl 5.003, patch 05" "18/Dec/97" "User Contributed Perl Documentation"
+.IX Title "PFOR 1"
+.UC
+.IX Name "pfor - A server-friendly (parallel) blast program with some DNS support"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+pfor \- A server-friendly (parallel) blast program with some DNS support
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+\fBpfor\fR executes a series of commands, usually on remote sites,
+usually in parallel. \fBpfor\fR should run in a way that shouldn't trash
+the server running \fBpfor\fR. There is some facility for
+verifying hostnames and specifying hostnames with patterns. The expansion
+is done with the help of DNS. But since \fBpfor\fR is general, the preceding
+description may be inadequate.
+.SH "USAGE"
+.IX Header "USAGE"
+\f(CWpfor\fR [\fIsimple switches\fR...] [\fIexecution switches\fR...] [\fIhostnames or hostname patterns\fR...]
+.PP
+See the subsequent the section on \fISimple Switches\fR and
+the section on \fIExecution-mode Switches\fR and the section on \fIHostname Patterns\fR.
+.PP
+Simple and Execution-mode switches may be interspersed, but the
+hostnames and hostname patterns must come at the end of the argument
+list. 
+.Sh "Simple Switches"
+.IX Subsection "Simple Switches"
+Simple Switches include:
+.Ip "\fB\-a\fR" 5
+.IX Item "\fB\-a\fR"
+Arguments. Show how \fBpfor\fR interpreted the arguments.
+.Ip "\fB\-h\fR" 5
+.IX Item "\fB\-h\fR"
+Help. Give a help message and exit. If \fBpfor\fR is run with what it thinks
+are invalid arguments, it gives an abbreviated version of this help.
+.Ip "\fB\-n\fR" 5
+.IX Item "\fB\-n\fR"
+No run. Don't really run anything, just show what \fBpfor\fR would do. I
+recommend using this switch to test any complex \fBpfor\fR invocation
+first.
+.Ip "\fB\-t\fR" 5
+.IX Item "\fB\-t\fR"
+Terse. Don't show host separator bar or give a message
+when a command completes with an error return.
+.Ip "\fB\-p\fR" 5
+.IX Item "\fB\-p\fR"
+Parallel. Execute in parallel. However note that the default 
+\fB\-z\fR implies \fB\-p\fR. If the \fB\-z\fR switch is not used, the parent of
+forked processes becomes \fIinit\fR (process id 1). This is done so that
+if the \fBpfor\fR program is killed processes are not zombies.
+.Ip "\fB\-v\fR" 5
+.IX Item "\fB\-v\fR"
+Verbose. Show the \f(CWrsh\fR and \f(CWrcp\fR commands.
+.Ip "\fB\-z\fR" 5
+.IX Item "\fB\-z\fR"
+(Obsolete) Zombies. Execute in parallel but this program stays the
+parent and terminates only after all of its kids.  Use this switch if
+you want to make sure all output is done by the time this program
+completes, or if you need to know when all commands have been
+executed. This may occur if the program is executed from another.
+.Sp
+Since this is the default, it needn't be specified anymore. 
+.Ip "\fB\-sequential\fR" 5
+.IX Item "\fB\-sequential\fR"
+Sequential. Don't fork processes but run them one at a time.
+.Ip "\fB\-nohostcheck\fR" 5
+.IX Item "\fB\-nohostcheck\fR"
+Don't verify that trailing arguments are valid hostnames.
+.Ip "\fB\-nopattern\fR" 5
+.IX Item "\fB\-nopattern\fR"
+Don't do pattern expansion on the hostnames. Without this switch
+\fI/usr/local/dns/dns_extract.pl\fR is called to do the actual expansion.
+See the section on \fIHostname Patterns\fR below.
+.Ip "\fB\-show_hostnames\fR   " 5
+.IX Item "\fB\-show_hostnames\fR   "
+list hostnames
+.Ip "\fB\-abort_on_hostname_error\fR" 5
+.IX Item "\fB\-abort_on_hostname_error\fR"
+Abort processing if any hostname error detected. If this switch is 
+not supplied, invalid hostnames will be removed but the commands will
+be run against the remaining (valid) hosts. 
+.Sp
+In cases where you want to defer processing unless all hosts are
+valid, use this switch. Note however just because all hostnames are 
+valid does not mean that the host is reachable. See also the
+\fB\-errhostf\fR switch.
+.Ip "\fB\-logf\fR \fIlogfile\fR" 5
+.IX Item "\fB\-logf\fR \fIlogfile\fR"
+Log the results of execution to \fIlogfile\fR. Without this switch the
+output of the commands are sent to standard output.
+.Ip "\fB\-hostf\fR \fIhostfile\fR" 5
+.IX Item "\fB\-hostf\fR \fIhostfile\fR"
+Read the list of hosts to run commands from file \fIhostfile\fR. The file
+should contain one hostname per line. Blank lines are ignored and
+comments can be entered by inserting # in column 1 (or after a
+newline, for you Unix bigots). See the section on \fIExample 1: introductory use\fR
+below for an example of the \fB\-hostf\fR switch and for the contents of a
+simple \fIhostfile\fR.
+.Ip "\fB\-errhostf\fR \fIlogfile\fR" 5
+.IX Item "\fB\-errhostf\fR \fIlogfile\fR"
+When a nonzero return code is returned from the execution of a command
+(from \fBpfor\fR's standpoint), the name of the host is logged to 
+\fIlogfile\fR. The output is added as a comment before the host name in
+the file. This file is in a suitable format to be used on a subsequent
+\fBpfor\fR run with this \fIlogfile\fR as the argument of the \fB\-hostf\fR
+switch.
+.Ip "\fB\-abort_on_hostname_error\fR" 5
+.IX Item "\fB\-abort_on_hostname_error\fR"
+.Sh "Execution-mode Switches"
+.IX Subsection "Execution-mode Switches"
+Above the section on \fISimple Switches\fR describes switches that modify the
+behavior of \fBpfor\fR slightly. The switches described here are the real
+meat of \fBpfor\fR: what gets done.
+.PP
+The heart of \fBpfor\fR contains an \*(L"engine\*(R" for running a series of commands
+and managing the execution. The mechanism is pretty simple and
+general: an internal array structure contains the
+list of commands to run. However in order to make it easier to do
+common tasks, some canned command sequences have been built in. In
+particular:
+.Ip "\(bu  " 3
+.IX Item "\(bu  "
+Run an executable stored locally at a remote site, removing the file
+after successful execution. See the \fB\-lcmdf\fR switch below.
+.Ip "\(bu" 3
+.IX Item "\(bu"
+Copy a file stored locally to a remote site, like \f(CWrcp\fR. See the 
+\fB\-rcp\fR switches below.
+.Ip "\(bu" 3
+.IX Item "\(bu"
+Untar a file across the network. See the \fB\-tarf\fR switch below.
+.Ip "\(bu" 3
+.IX Item "\(bu"
+Untar a file across the network and then run an installation program
+contained in the file. See the \fB\-tar_install\fR switch below
+.Ip "\(bu " 3
+.IX Item "\(bu "
+Finally, there is a way just to specify how to put commands 
+into the command array. To be useful though one needs to get access to
+the thing that's being looped over, usually a hostname. See the
+\fB\-exec2\fR switch below.
+.PP
+It usually doesn't make sense to copy a file to a remote site
+\fIand\fR untar it across the network; or execute a \f(CWtar\fR file
+remotely and then remove it (that's usually done with an executable
+file).  So, for the most part, the switches described here are mutually
+exclusive. However \fIone\fR of these switches need to be specified.
+.PP
+Now to the specific list of switches...
+.Ip "\fB\-rsh\fR \fIcommands\fR" 5
+.IX Item "\fB\-rsh\fR \fIcommands\fR"
+Execute \fIcommands\fR on the specified hosts. An implied \f(CWrsh $host\fR is
+prepended to the beginning of the command. 
+.Sp
+In order to keep \fBpfor\fR's grubby while loops from interpreting the
+blank-delimited arguments intended for the command, you should
+surround the command and its arguments in some sort of quotes (or more
+cumbersome: escape the blanks). If the command also contains shell
+expansion characters (like *), probably the best way to go with most
+shells is with single quotes.
+.Sp
+See the section on \fIExample 1: introductory use\fR and 
+the section on \fIExample 2: running several commands remotely using \-rsh\fR 
+for some simple invocations of this format.
+.Ip "\fB\-rcp\fR \fIlocal-file\fR \fB\-rcmdf\fR \fIremote-path-or-file\fR" 5
+.IX Item "\fB\-rcp\fR \fIlocal-file\fR \fB\-rcmdf\fR \fIremote-path-or-file\fR"
+Copy \fIlocal-file\fR to \fIremote-path-or-file\fR.
+If \fIremote-path-or-file\fR is omitted, the file will be copied to the
+the same place as \fIlocal-file\fR as \f(CWrcp\fR would do.
+.Sp
+If \fIremote-cmdfile\fR ends in a /, then the name is interpreted as a
+directory and the copy will have the same basename as \fIcmdfile\fR. Again the 
+same as \f(CWrcp\fR would do.
+.Sp
+See the section on \fIExample 6: running rcp in parallel using \-rcp\fR for an 
+example of this kind of invocation.
+.Ip "\fB\-lcmdf\fR \fIcmdfile\fR [\fB\-rcmdf\fR \fIremote-cmdfile\fR] [\-args \fIarguments\fR] [\fB\-nrsh\fR]" 5
+.IX Item "\fB\-lcmdf\fR \fIcmdfile\fR [\fB\-rcmdf\fR \fIremote-cmdfile\fR] [\-args \fIarguments\fR] [\fB\-nrsh\fR]"
+Copy \fIcmdfile\fR to \fIremote-cmdfile\fR supplying \fIarguments\fR; then
+run \fIcmdfile\fR and finally remove \fIremote-cmdfile\fR.
+If \fIremote-cmdfile\fR is omitted, the file will be copied to the
+\fI/tmp\fR directory. 
+.Sp
+If \fIremote-cmdfile\fR ends in a /, then the name is interpreted as a
+directory and the copy will have the same basename as \fIcmdfile\fR.
+.Sp
+See 
+the section on \fIExample 4: Copying and running a program on branch servers using the \-lcmdf switch\fR 
+for some examples of this kind of invocation.
+.Sp
+The \fB\-nrsh\fR switch is probably historical laziness. Probably you can do
+what you want with \fB\-rcp\fR with less hassle.
+.Sp
+If the \fB\-nrsh\fR switch is used, the effect is like \f(CWrcp\fR, except that the 
+default destination is in the \fI/tmp\fR directory.
+.Ip "\fB\-tarf\fR \fItar-file\fR " 5
+.IX Item "\fB\-tarf\fR \fItar-file\fR "
+Untar \fItar-file\fR across the network to the hosts specified. If the
+<tar-file> extension ends in .gz or .Z the program is uncompressed
+courtesy of \s-1GNU\s0 tar (which is assumed to be in /usr/local/bin).
+.Sp
+In particular, run 
+  \f(CWcat\fR \fItar-file\fR \f(CW| "rsh $host 'cd / && tar -xvpf -'"\fR
+.Sp
+or 
+  \f(CWcat\fR \fItar-file\fR \f(CW| "rsh $host 'cd / && /usr/local/bin/tar -xzvpf -'"\fR
+.Ip "\fB\-tar_install\fR \fItar-file\fR " 5
+.IX Item "\fB\-tar_install\fR \fItar-file\fR "
+Untar a \fItar-file\fR across the network to the hosts specified. Then
+run an installation program. The installation program is assumed be
+in the \fItar-file\fR in the \fI/tmp\fR directory and having the same name as
+the tar file (minus the \f(CW.tar\fR extension).
+.Sp
+For example if \fItar-file\fR is \fI/usr/sa/rockyshits/myfavorites.tar\fR
+there would be an executable called \f(CWtmp/myfavorites\fR in the tar
+file. Presumably this code would do installation on the host after the
+tar file has be extracted across the network.
+.Sp
+But some code is worth a thousand words. Here's what \fBpfor\fR really does:
+  \f(CWcat\fR \fIpath/pkg\fR\f(CW.tar | "rsh $host 'cd / && tar -xvpf -'" && /tmp/\fR\fIpkg\fR \f(CW&& rm /tmp/\fR\fIpkg\fR
+.Sp
+where \fIpkg\fR name of the package. If the tar file ends
+in .gz or .Z the \fB\-z\fR switch is added and \fI/usr/local/bin/tar\fR (\s-1GNU\s0
+tar) is used.
+.Sp
+See the section on \fIExample 3: blasting out a tar file using the \-tarf switch\fR for
+an example of this format.
+.Ip "\fB\-exec2\fR \fIcommands\fR " 5
+.IX Item "\fB\-exec2\fR \fIcommands\fR "
+This is the most general form for running commands. The only thing
+that gets run over each argument (usually hostname) in \fBpfor\fR's loop
+is what you specify. To get access to the loop variable use
+\f(CW$host\fR. See the section on \fIExample 5: running locally using \-exec2\fR below for an
+example of a use of this format.
+.Sh "Hostname Patterns"
+.IX Subsection "Hostname Patterns"
+\fBpfor\fR owes its existence to its ability to run commands looping over
+host names. Thus the final arguments to \fBpfor\fR may specify hostnames.
+To make it easy to blast, the arguments can either be hostnames or
+\fIpatterns\fR which will be expanded to hostnames.
+.PP
+Unless the \fB\-nohostcheck\fR switch is specified, a \fIgethostbyname()\fR
+library call is issued to determine whether an argument is a host name
+or pattern.  If this command returns without error, the argument is a
+hostname; otherwise it is treated as a pattern.
+.PP
+A hostname pattern expands to a list of hostnames. When available, the program
+\fI/usr/local/dns/dns_extract.pl\fR is called to do the actual expansion.
+So you might want to consult that for a description of patterns.  Patterns
+beginning with ! may have to be escaped so the shell doesn't interpret
+them. See the section on \fIExample 5: running locally using \-exec2\fR below.
+.PP
+Non-comment entries contained in a hostfile specified by \fB\-hostf\fR are
+treated exactly as a hostname or hostname pattern would be if
+specified on the command line.
+.SH "EXAMPLES"
+.IX Header "EXAMPLES"
+.Sh "Example 1: introductory use"
+.IX Subsection "Example 1: introductory use"
+I've sometimes wondered what's the workstation that so-and-so uses.
+Since \f(CWwho\fR shows who is logged onto the workstation, the user that
+appears most often is probably the person sitting at the console. So
+to glean the non-macho users sitting at a given workstation try:
+.PP
+.Vb 1
+\&  pfor -p -rsh who drmcl002 drmcl021 drmcl004 drmcl005 canton
+.Ve
+This is like the ksh code:
+.PP
+.Vb 3
+\&  for host in drmcl002 drmcl0021 drmcl004 drmcl005 canton ; do
+\&     rsh $host who &
+\&  done
+.Ve
+But there is are some subtle differences between this and the above
+ksh code. 
+.PP
+First, \fBpfor\fR is more caring about the server that the command is run on.
+If the load average is too high, \fBpfor\fR will delay in
+forking more processes. Also \fBpfor\fR will not forge ahead if the
+\s-1AIX/\s0SunOS's network card's memory buffers (mbufs) are overloaded.
+.PP
+Second, the above ksh program may intersperse output from various
+workstations making it hard to tell who's logged on where. \fBpfor\fR will
+give all output from a site together with a separator line to indicate
+where the output came from.
+.PP
+If you actually try it (I just did) you may find that drmcl021
+doesn't want to respond to a \fIwho\fR command. So you may find that 
+the output for drmcl021 comes after the output for canton.
+.PP
+Instead of typing out the names of the hosts, it might be more
+convenient to put them all into a file and point \fBpfor\fR at that.
+.PP
+That's what the \fB\-hostf\fR switch is all about. So that above example 
+could be done as:
+.PP
+.Vb 1
+\&      pfor -p -hostf /u/rocky/work/drc.sites -rsh who
+.Ve
+where \fI/u/rocky/work/drc.sites\fR is a file containing:
+.PP
+.Vb 1
+\&   drmcl002
+.Ve
+.Vb 1
+\&   # Recall that blank lines and lines beginning with # are comments.
+.Ve
+.Vb 3
+\&   drmcl0021
+\&   drmcl005
+\&   canton
+.Ve
+Now let's change that so that we just get the users and remove all of
+that other crap. Instead of \fIwho\fR we really want to run 
+.PP
+.Vb 2
+\&    export PATH=/usr 
+\&    who | awk '{ print $1 }' | sort | uniq
+.Ve
+One way to do this is to put this in a command file 
+with \f(CW#!/bin/ksh\fR and setting a \s-1PATH\s0 so we know what programs we're
+getting. That is:
+.PP
+.Vb 3
+\&    #!/bin/ksh
+\&    export PATH=/usr/bin
+\&    who | awk '{ print $1 }' | sort | uniq
+.Ve
+Let's say the above was put in \f(CWwhouniq.ksh\fR. Then we could run:
+.PP
+.Vb 1
+\&  pfor -hostf /u/rocky/work/drc.sites -lcmdf whouniq.ksh
+.Ve
+.Sh "Example 2: running several commands remotely using \-rsh"
+.IX Subsection "Example 2: running several commands remotely using \-rsh"
+To get some statistics about servers \f(CWsa\fR, \f(CWbonzo\fR, and \f(CWfilesvr\fR,
+try this:
+.PP
+.Vb 1
+\&  pfor -sequential -rsh 'uptime;pstat -s;vmstat;iostat' sa bonzo filesvr
+.Ve
+In contrast to the examples above, the invocations are not done in
+parallel since the \fB\-sequential\fR switch is used: 
+first \f(CWsa\fR is tried; after that completes \f(CWbonzo\fR is tried and after that 
+completes \f(CWfilesvr\fR.
+.PP
+Note that the argument to \fB\-rsh\fR is enclosed in quotes to keep the
+shell and \fBpfor\fR from munging it. Similarly, if you wanted to list
+all files in \fI/usr/local\fR on \s-1CPU10\s0 sites you might try:
+.PP
+.Vb 1
+\&  pfor -rsh 'ls -l /usr/local/*' cpu10
+.Ve
+Again the single quotes keep the shell from expanding * on the server
+issuing \fBpfor\fR before \fBpfor\fR even gets to see the command.
+.Sh "Example 3: blasting out a tar file using the \-tarf switch"
+.IX Subsection "Example 3: blasting out a tar file using the \-tarf switch"
+To blast out \fIhome-opcuser.tar\fR to the \s-1CPU27\s0 sites and log the results:
+.PP
+.Vb 1
+\&  pfor -logf /tmp/opcuser.log -tarf 'home-opcuser.tar' cpu27
+.Ve
+Note that if this is called from another program, the 
+log file will be complete before \fBpfor\fR returns. Compare with the \fB\-p\fR
+switch.
+.PP
+But I'd recommend that before you really do something like this to
+lots of sites, you consider using the \fB\-n\fR switch to see what damage 
+you may be about to do.
+.Sh "Example 4: Copying and running a program on branch servers using the \-lcmdf switch"
+.IX Subsection "Example 4: Copying and running a program on branch servers using the \-lcmdf switch"
+To execute script \f(CW/rockyshits/fix_io.ksh\fR on all branch servers:
+.PP
+.Vb 1
+\&  pfor -lcmdf /rockyshits/fix_io.ksh -hostf /usr/local/dns/branch_servers
+.Ve
+Here is an equivalent, but longer, way to do this:
+.PP
+.Vb 1
+\&  pfor -lcmdf /rockyshits/fix_io.ksh -rcmdf /tmp/ -hostf /usr/local/dns/branch_servers
+.Ve
+Since the argument of \-rcmdf ends in a slash (\f(CW/tmp/\fR) it is taken to be 
+directory name. Therefore the file \f(CW/rockyshits/fix_io.ksh\fR
+is copied to \f(CW$host:/tmp/fix_io.ksh\fR.
+.Sh "Example 5: running locally using \-exec2"
+.IX Subsection "Example 5: running locally using \-exec2"
+Suppose we want to get the \s-1IP\s0 addresses for all of the cpu27's except
+the wire code for Boston, \f(CWjj\fR.  The \fI/usr/bin/host\fR command run
+locally will probably do the trick. So try:
+.PP
+.Vb 1
+\&   pfor -exec2 '/usr/bin/host $host' cpu27 \e!jj
+.Ve
+Note that here we don't have to run any command remotely. So \fI\-exec2\fR
+is used. The variable \f(CW$host\fR expands to each host that matches the
+pattern \f(CWcpu27 !jj\fR. As of Oct \*(L'95 this pattern expands to:
+.PP
+.Vb 2
+\&  cpu14.cg, cpu14.cp, cpu14.fn, cpu14.jg, cpu14.jx, cpu14.pw,
+\&  cpu14.ts, cpu14.we
+.Ve
+In order for pattern expansion to work, the program
+\fI/usr/local/dns/dns_extract.pl\fR needs to be around. Right now, it's
+only available on \f(CWsa\fR.
+.Sh "Example 6: running rcp in parallel using \-rcp"
+.IX Subsection "Example 6: running rcp in parallel using \-rcp"
+To copy root's /.rhost to cpu10's:
+.PP
+.Vb 1
+\&   pfor -rcp /.rhost cpu10
+.Ve
+This also can be accomplished by:
+.PP
+.Vb 1
+\&   pfor -rcp /.rhost -rcmdf / cpu10
+.Ve
+or even more verbosely:
+.PP
+.Vb 1
+\&   pfor -rcp /.rhost -rcmdf /.rhosts cpu10
+.Ve
+or 
+.SH "Local Server Friendliness"
+.IX Header "Local Server Friendliness"
+Watch this space for a description \f(CWnetstat -m\fR, load average
+checking, and handling of zombies.
+.SH "BUGS"
+.IX Header "BUGS"
+The program is necessarily complex. However the user interface could
+be better. Blame it on Jim; he's not around anyway. 
+.PP
+The program is now a bit over bloated. It's a little bit AIX/SunOS
+oriented (\f(CWnetstat -m\fR doesn't cut it on Solaris).
+.PP
+More sophisticated command sequences as are found in \fB\-tarf\fR and
+\fB\-tar_install\fR will probably be added. 
+.PP
+For example, checking checksums on untarring across the network should
+be done.  A mechanism for running a program locally after a tar
+install might be needed. A mechanism for catching error codes remotely
+is needed: \f(CWrsh\fR doesn't cut it; something more like
+\fI/home/opcuser/execute\fR might be used. And so on.
+.PP
+All this means more complexity; but perhaps it can be added in a clean
+way.
+.PP
+I've offloaded the DNS pattern part to another program
+\fIdns_extract.pl\fR. Right now that only exists on \f(CWsa\fR. \fIThat\fR
+program should be using \f(CWnslookup\fR or \f(CWdig\fR to get DNS info if local
+maps are not available.
+.SH "History"
+.IX Header "History"
+Rocky Bernstein wrote the first cuts of the program in desperation. He
+then convinced Jim Anderson that it'd be a fun thing to work on. Jim
+handled the program during his brief tenure here. Rocky also wrote the
+first cut of the manual after Sean Coates suggested that it was used
+enough to warrant one.  (Any volunteers for program/manual maintenance?)
+.PP
+Since it's come up a lot, here's how the name \fBpfor\fR was \*(L"chosen.\*(R"
+There was a program of the same name written by Andy Lowry (at
+Morgan-Stanley, but I knew him from IBM Watson). Andy stole the name
+from a construct in the IBM \*(L"Parallel Fortran\*(R" compiler. So \fBpfor\fR
+stands for \*(L"Parallel For.\*(R" Maybe it'd be simpler if we renamed it to
+\*(L"blast.\*(R"
+.PP
+The program has gotten better (or worse), but definitely more complex
+from suggestions by numerous PaineWebber folk. The people I can think
+of offhand are: Joel Weisberg and Spencer Siu. 
+   
+
+.rn }` ''

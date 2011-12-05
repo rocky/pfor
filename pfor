@@ -1,6 +1,7 @@
 #!/usr/bin/perl
-$version='$Id: pfor,v 1.8 2000/07/24 12:12:53 rocky Exp $';
+our $version='1.9';
 # Another fine product of rocky, with some assistance of Jim Anderson.
+use File::Basename;
 
 sub short_usage {
 print 
@@ -17,9 +18,10 @@ Switches: -a, -help, -n, -t, -verbose, -z, -nohostcheck, -nopattern,
           -hostf <hostlist>,  
           -timeout [<# of seconds>]
   and one of the following:
+          -rpm  <rpm-file>
           -tarf  <tar-file>
           -tar_install <tar-file-with-executable>
-          {-rsh | -ssh | -sh }   <cmds>
+          {-rsh | -ssh | -sh [=ssh_program]}   <cmds>
           {-rcp | -scp} <local-file> [-rcmdf <remote-path-or-file>]
           -lcmdf <cmdfile> [-rcmdf <remote-cmdfile>] [-args <arguments>]
           -exec2 <cmds>
@@ -187,7 +189,7 @@ sub initialize {
     $LOCK_EX = 2; 
     $LOCK_UN = 8;
 
-    ($program = $0) =~ s,.*/,,;   # Who am I today, anyway? 
+    $program = basename($0);   # Who am I today, anyway? 
 
     $expand_wire_prog = '/usr/local/bin/netgroup_expand';
 
@@ -221,7 +223,7 @@ sub initialize {
     # with say 'timeout.pl -t 120 rsh'
     $ssh = '/usr/bin/ssh';   
     $ssh_opts='-o BatchMode=yes -o FallBackToRsh=yes -o ConnectionAttempts=5 '.
-  	      '-o ForwardX11=no';
+  	      '-o ForwardX11=no -o StrictHostKeyChecking=no';
 
     # Command to use for scp-like sequences. This may be overwritten
     # with say 'timeout.pl -t 300 rsh'
@@ -260,6 +262,7 @@ sub process_options {
 	 'cmdsep=s',       \$opt_cmdsep,
 	 'rcmdf=s',        \$opt_rcmdf,
 	 'lcmdf=s',        \$opt_lcmdf,
+	 'rpm=s',          \$opt_rpm,
 	 'scp|rcp=s',      \$opt_scp,
 	 'logf=s',         \$opt_logf,
 	 'hostf:s',        \@opt_hostf,
@@ -271,6 +274,7 @@ sub process_options {
 	 'exec2=s',        \$opt_exec2,
 	 'args=s',         \$opt_args,
 	 'ssh|rsh|sh=s',   \$opt_rsh,
+	 'ssh_opts=s',     \$opt_ssh_opts,
 	 'timeout:i',      \$timeout,
 	 'sleep_int=i',    \$sleep_int,
 	 'help|h',  \$help
@@ -316,10 +320,10 @@ sub process_options {
     }
     
     usage() if $help;			# 'help' requested
-    
+
     $cnt = ($opt_rsh ne '') + ($opt_exec2 ne '') + ($opt_lcmdf ne '')
 	+ ($opt_scp ne '') + ($opt_tarf ne '')  + ($opt_cmds  ne '')
-	+ ($opt_tar_install ne '') + ($opt_tar ne '');
+	+ ($opt_tar_install ne '') + ($opt_tar ne '') + ($opt_rpm ne ''); 
     die "Need exactly one of -ssh, -exec2, -tarf, -cmds, -tar_install, "
         . "-tar, or -lcmdf option ($cnt),\nor -rsh -exec2 with -tarf.\n"
     unless ($cnt == 1) || ($cnt==2 && $opt_tarf ne '');
@@ -383,6 +387,7 @@ sub process_options {
 	    process_tar($dir);
 	}
     }
+    process_rpm($opt_rpm) if ($opt_rpm);
 
     # local command file specified ?
     
@@ -484,7 +489,7 @@ sub log_print {
 sub expand_wire {
     my($wc) = shift;
     my(@outlist,$errfile,@retlist,$junk);
-    local(@bad_hosts);
+    my(@bad_hosts);
 
     $errfile="/tmp/dns.$$.err";
     @outlist = &get_NIS_domains_or_hosts($wc, *bad_hosts, *had_error);
@@ -530,6 +535,8 @@ Simple switches:
    -nowarn           -- don't print warnings about hight network or cpu usage
    -sequential       -- run commands sequentially rather than in parallel.
    -show_hostnames   -- list hostnames
+   -ssh_opts OPTS    -- set ssh options. Default is
+                        $ssh_opts
    -abort_on_hostname_error
                      -- abort processing if hostname error detected
    -logf  <logfile>  -- log results to <file>
@@ -692,7 +699,8 @@ sub do_cpu {
 	if !$opt_t;
 
     # Do 'major options', excluding -rsh, here
-    if ( $opt_exec2 || $opt_tarf || $opt_tar || $opt_rcmdf || $opt_cmds ) {
+    if ( $opt_exec2 || $opt_tarf || $opt_tar || $opt_rcmdf || $opt_cmds 
+	 || $opt_rpm ) {
 	# Interpret variable references in @CMDS
 	foreach ( @CMDS ) {
 	    # Assigning $_ modifies the entry in @CMDS. 
@@ -825,7 +833,7 @@ sub mygethostbyname {
 }
 
 #
-# Check integrety of tar file and if okay add commands to untar across the 
+# Check integrity of tar file and if okay add commands to untar across the 
 # network.
 #
 sub process_tarf {
@@ -843,13 +851,15 @@ sub process_tarf {
     }
     die "File: $tar_file, invalid tar file. tar reports:\n($!)\n" if $? >> 8;
     if ($opt_tar_install) {
+	my $short_tar = basename($tar_file);
 	# pick out program name from tar file name and tack on "/tmp/" before it.
 	my($ex) = $1;
 	$ex =~ s,.*/,,;
 	$ex = "/tmp/$ex.install";
 	push (@CMDS,
-        "cat $tar_file|$ssh $ssh_opts \$host \"cd / && $tar_cmd && $ex ;" .
-	      " rm $ex\""); 
+        # "cat $tar_file|$ssh $ssh_opts \$host \"cd / && $tar_cmd && $ex ;" .
+	#       " rm $ex\""); 
+	      "$rcp -p $ssh_opts $tar_file \${host}:/tmp/ && $ssh $ssh_opts \$host \"/usr/local/bin/rocky-tar-install /tmp/$short_tar\"");
     } else {
 	push (@CMDS,
 	      "cat $tar_file | $ssh $ssh_opts \$host \"cd / && $tar_cmd\""); 
@@ -861,12 +871,30 @@ sub process_tarf {
 # network.
 #
 sub process_tar {
-    local($dir) = @_;
+    my($dir) = @_;
     chdir $dir || die "Can't cd to directory, $dir: $!\n"; 
     $tar_in = '$tar -cpf-';
     $tar_out = '$tar -xpf-';
     push (@CMDS,
          "cd / && $tar_in $dir | $ssh $ssh_opts \$host \"cd / && $tar_out\""); 
+}
+
+#
+# Check integrity of tar file and if okay add commands to untar across the 
+# network.
+#
+sub process_rpm($) 
+{
+    my($rpm_file) = @_;
+    filetest($rpm_file);
+    my $short_rpm_file = basename($rpm_file);
+    # Check rpm file for integrety
+    # my $output = `/usr/bin/file $rpm_file 2>&1`;
+    # die "File: $rpm_file, invalid rpm file. file reports:\n($!)\n" if $? >> 8;
+    my $cmd = 
+	"$rcp -p $rpm_file \${host}:/tmp/ && " .
+	"$ssh $ssh_opts \$host 'rpm -Uvh /tmp/$short_rpm_file'"; 
+    push @CMDS, $cmd;
 }
 
 sub finish {
@@ -909,4 +937,3 @@ sub show_version {
 #-# Local Variables: -#-
 #-# mode: perl -#-
 #-# End: -#-
-

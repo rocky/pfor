@@ -1,7 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 our $version='1.9';
 # Another fine product of rocky, with some assistance of Jim Anderson.
 use File::Basename;
+use Cwd 'abs_path';
 
 sub short_usage {
 print 
@@ -427,7 +428,7 @@ sub process_options {
     if (@opt_hostf) {
 	foreach my $opt_hostf (@opt_hostf) {
 	    @HOST_FILES = split(/[, \t\n]+/, $opt_hostf);
-	    push(@CPUS, read_config_files(*HOST_FILES));
+	    push(@CPUS, read_config_files(@HOST_FILES));
 	}
     }
     
@@ -545,6 +546,7 @@ Simple switches:
 
   And one of the following mutually exclusive options must be given:
    {-rsh | -ssh | -sh } <cmds>
+   -rpm  <rpm-file>
    -scp <local-file> [-rcmdf <remote-cmdfile>]
                      -- copy <cmdfile> to <remote-cmdfile> 
    -lcmdf <cmdfile> [-rcmdf <remote-cmdfile>] [-args <arguments>]
@@ -750,28 +752,39 @@ sub print_to_log {
 # and comments lines---those beginning with #.
 # Need to pass arguments....
 sub read_config_files {
-    local(*CONFIG_FILES) = @_;
+    my @CONFIG_FILES = @_;
     my(@ITEMS);
-    foreach $config_file (@CONFIG_FILES) {
-	my($hostname);
-	$globbed_file = $config_file;
-	die "Not a text file: $globbed_file." 
-	    if ! -T $globbed_file;
+    foreach my $config_file (@CONFIG_FILES) {
+	my $hostname;
+	my $globbed_file = $config_file;
+	if (! -T $globbed_file) {
+	    # Enbugger->stop;
+	    die "Not a text file: $globbed_file." 
+	}
 	# Read the data ignoring blank and comment lines.
-	open(CONFIG_FILE, "<$globbed_file") || 
+	open(my $fh, "<$globbed_file") || 
 	    die "Cannot open configuration file $globbed_file for reading: $!\n";
-	while (<CONFIG_FILE>) {
+	while (<$fh>) {
 	    next if /^#/ || /^\s*$/;
+	    if (/^%include (\S+)/) {
+		my $include_file = $1;
+		my $cwd;
+		chomp($cwd = `pwd`);
+		chdir dirname(abs_path($globbed_file));
+		push @ITEMS, read_config_files($include_file);
+		chdir $cwd;
+		next;
+	    }
 	    chomp;
 	    $hostname=(split(/\s+/))[0];
 	    push (@ITEMS, $hostname), next 
 		if $opt_nohostcheck || $opt_nopattern || gethostbyname($hostname);
 
-	# Hope it's something $expand_wire_prog understands
-	$wires .= " $hostname"; 
+	    # Hope it's something $expand_wire_prog understands
+	    $wires .= " $hostname"; 
 	}
 	# For now no substitutions, so use command file as-is.
-	close(CONFIG_FILE) || die "close failed for $globbed_file: $!\n";
+	close($fh) || die "close failed for $globbed_file: $!\n";
     }
     return @ITEMS;
 }

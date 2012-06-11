@@ -139,7 +139,8 @@ However in order to make it easier to do common tasks, some canned
 command sequences have been built in. In particular:
 
 =over 4
-item * 
+
+=item * 
 
 Run an executable stored locally at a remote site, removing the file
 after successful execution. See the C<-lcmdf> switch below.

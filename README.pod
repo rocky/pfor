@@ -376,13 +376,13 @@ To get some statistics about servers C<sa>, C<bonzo>, and C<filesvr>, try this:
     pfor -z -ssh 'uptime;pstat -s;vmstat;iostat' sa bonzo filesvr
 
 In contrast to the examples above, the invocations is done in
-parallel since the C<-z> switch is not used: first `sa` is tried; after
-that completes `bonzo`, and after that completes `filesvr`.
+parallel since the C<-z> switch is not used: first C<sa> is tried; after
+that completes C<bonzo>, and after that completes C<filesvr>.
 
 Note that the argument to C<-ssh> is enclosed in quotes to keep the
 shell and I<pfor> from munging it. Similarly, if you wanted to list
 all files in /usr/local on the sites listed in file
-`/usr/local/etc/cpu10.hosts` you might try:
+C</usr/local/etc/cpu10.hosts> you might try:
 
     pfor -ssh 'ls -l /usr/local/*' -hostf /usr/local/etc/cpu10.hosts
 
@@ -391,8 +391,8 @@ issuing pfor before pfor even gets to see the command.
 
 =head2 Example 3: blasting out a tar file using the C<-tarf> switch
 
-To blast out `home-opcuser.tar` to the sites listed in file 
-`cpu27.hosts` and log the results:
+To blast out C<home-opcuser.tar> to the sites listed in file 
+C<cpu27.hosts> and log the results:
 
    pfor -logf /tmp/opcuser.log -tarf 'home-opcuser.tar' -hostf cpu27.hosts
 

@@ -194,7 +194,7 @@ more cumbersome: escape the blanks). If the command also contains
 shell expansion characters (like *), probably the best way to go
 with most shells is with single quotes.
 
-See L<Example 1: introductory use> and L<Example 2: running several commands remotely using C<-rsh>> for some simple invocations of this format.
+See L<Example 1: introductory use> and L<Example 2: running several commands remotely using C<-ssh>> for some simple invocations of this format.
 
 =item -scp I<local-file> -rcmdf I<remote-path-or-file>
 

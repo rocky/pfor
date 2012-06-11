@@ -341,7 +341,7 @@ convenient to put them all into a file and point I<pfor> at that.
 That's what the -hostf switch is all about. So that above example could
 be done as:
 
-    pfor -p -hostf /usr/local/etc/banner.hostf -ssh who
+    pfor -z -hostf /usr/local/etc/banner.hostf -ssh who
 
 where C</urs/local/etc/banner.hostf> is a file containing:
 
@@ -355,50 +355,52 @@ where C</urs/local/etc/banner.hostf> is a file containing:
 Now let's change that so that we just get the users and remove all of
 that other crap. Instead of who we really want to run
 
-           export PATH=/usr
-           who ⎪ awk '{ print $1 }' ⎪ sort ⎪ uniq
+     export PATH=/usr
+     who ⎪ awk '{ print $1 }' ⎪ sort ⎪ uniq
 
 One way to do this is to put this in a command file with #!/bin/ksh and
 setting a PATH so we know what programs we're getting. That is:
 
-           #!/bin/ksh
-           export PATH=/usr/bin
-           who ⎪ awk '{ print $1 }' ⎪ sort ⎪ uniq
+      #!/bin/ksh
+      export PATH=/usr/bin
+      who ⎪ awk '{ print $1 }' ⎪ sort ⎪ uniq
 
 Let's say the above was put in whouniq.ksh. Then we could run:
 
-         pfor -hostf /usr/local/etc/banner.hostf -lcmdf whouniq.ksh
+      pfor -z -hostf /usr/local/etc/banner.hostf -lcmdf whouniq.ksh
 
 =head2 Example 2: running several commands remotely using C<-ssh>
 
 To get some statistics about servers C<sa>, C<bonzo>, and C<filesvr>, try this:
 
-    pfor -sequential -ssh 'uptime;pstat -s;vmstat;iostat' sa bonzo filesvr
+    pfor -z -ssh 'uptime;pstat -s;vmstat;iostat' sa bonzo filesvr
 
-In contrast to the examples above, the invocations are not done in
-parallel since the -sequential switch is used: first sa is tried; after
-that completes bonzo is tried and after that completes filesvr.
+In contrast to the examples above, the invocations is done in
+parallel since the C<-z> switch is not used: first `sa` is tried; after
+that completes `bonzo`, and after that completes `filesvr`.
 
-Note that the argument to -ssh is enclosed in quotes to keep the shell
-and pfor from munging it. Similarly, if you wanted to list all files in
-/usr/local on CPU10 sites you might try:
+Note that the argument to C<-ssh> is enclosed in quotes to keep the
+shell and I<pfor> from munging it. Similarly, if you wanted to list
+all files in /usr/local on the sites listed in file
+`/usr/local/etc/cpu10.hosts` you might try:
 
-    pfor -ssh 'ls -l /usr/local/*' cpu10
+    pfor -ssh 'ls -l /usr/local/*' -hostf /usr/local/etc/cpu10.hosts
 
 Again the single quotes keep the shell from expanding * on the server
 issuing pfor before pfor even gets to see the command.
 
 =head2 Example 3: blasting out a tar file using the C<-tarf> switch
 
-To blast out home-opcuser.tar to the CPU27 sites and log the results:
+To blast out `home-opcuser.tar` to the sites listed in file 
+`cpu27.hosts` and log the results:
 
-   pfor -logf /tmp/opcuser.log -tarf 'home-opcuser.tar' cpu27
+   pfor -logf /tmp/opcuser.log -tarf 'home-opcuser.tar' -hostf cpu27.hosts
 
 Note that if this is called from another program, the log file will be
-complete before pfor returns. Compare with the -p switch.
+complete before I<pfor> returns. 
 
 But I'd recommend that before you really do something like this to lots
-of sites, you consider using the -n switch to see what damage you may
+of sites, you consider using the C<-n> switch to see what damage you may
 be about to do.
 
 =head2  Example 4: Copying and running a program remotely using the C<-lcmdf> switch

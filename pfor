@@ -5,7 +5,7 @@ use File::Basename;
 use Cwd 'abs_path';
 
 sub short_usage {
-print 
+print
 "Synopsis:
   $program --help | --version
   $program <switches> (pattern|host)...
@@ -13,10 +13,10 @@ print
   A generic \"parallel for\" routine to number of commands, generally
   on a number of remote and trusted sites.
 
-Switches: -a, -help, -n, -t, -verbose, -z, -nohostcheck, -nopattern, 
-          -show_hostnames, -abort_on_hostname_error, 
+Switches: -a, -help, -n, -t, -verbose, -z, -nohostcheck, -nopattern,
+          -show_hostnames, -abort_on_hostname_error,
           -logf  <logfile>, -errhostf <logfile>,
-          -hostf <hostlist>,  
+          -hostf <hostlist>,
           -timeout [<# of seconds>]
   and one of the following:
           -rpm  <rpm-file>
@@ -28,7 +28,7 @@ Switches: -a, -help, -n, -t, -verbose, -z, -nohostcheck, -nopattern,
           -exec2 <cmds>
 
 See $program -h for more detailed information.
-"; 
+";
  exit 100
 }
 
@@ -82,19 +82,19 @@ foreach $host ( @CPUS ) {
 		# I'm the child need to run stuff...
 		local $SIG{'ALRM'} = \&alarm_handler;
 		alarm $timeout;
-		do_cpu(); 
+		do_cpu();
 		print_to_log();
 		exit 0;
 	    }
 	} else {
-	    do_cpu(); 
+	    do_cpu();
 	}
 	print_to_log();
 	next;
 
     }
 
-    # 
+    #
     # Make sure the system is not already too loaded with running processes.
     #
     $uptime_warning=0;
@@ -107,11 +107,11 @@ foreach $host ( @CPUS ) {
 	    if !$uptime_warning && !$opt_nowarn;
 	$uptime_warning=1;
 	&reap_kids(); sleep $sleep_int;
-    } 
-    print STDERR "Load average is now $avg. Continuing...\n" 
+    }
+    print STDERR "Load average is now $avg. Continuing...\n"
 	if $uptime_warning && !$opt_nowarn;
 
-    # 
+    #
     # Make sure there is not already too much network activity.
     #
     $mbuf_warning=0;
@@ -125,19 +125,19 @@ foreach $host ( @CPUS ) {
 	    if !$mbuf_warning && !$opt_nowarn;
 	$mbuf_warning=1;
 	&reap_kids(); sleep 5;
-    } 
-    print STDERR "mbuf is now ${mbuf_usage}%. Continuing...\n" 
+    }
+    print STDERR "mbuf is now ${mbuf_usage}%. Continuing...\n"
 	if $mbuf_warning && !$opt_nowarn;
-    
-    # Invoke command(s) in parallel with me as the parent. 
-    # If I die, these are zombies. (If I don't die, I do a pretty good 
+
+    # Invoke command(s) in parallel with me as the parent.
+    # If I die, these are zombies. (If I don't die, I do a pretty good
     # job of listening to dying kids.) I will finish
-    # after all of my children. If this is called from another 
+    # after all of my children. If this is called from another
     # routine which needs my output or if the separator bars on the
     # hostname need to come immediately before the output, this is what
     # needs to be done.
     if ($opt_z) {
-	unless ($pid = fork) { 
+	unless ($pid = fork) {
 	    # I'm the child need to run stuff...
 	    if ($timeout) {
 		$SIG{'ALRM'} = \&alarm_handler;
@@ -154,7 +154,7 @@ foreach $host ( @CPUS ) {
 	next;
     }
 
-    # Invoke command(s) in parallel with init as the parent so 
+    # Invoke command(s) in parallel with init as the parent so
     # they won't be a zombie if I die.
     # Copied from "Programming Perl", page 212.
     unless (fork) {	# this is the child process
@@ -187,10 +187,10 @@ exit;
 sub initialize {
 
     # flock() constants;
-    $LOCK_EX = 2; 
+    $LOCK_EX = 2;
     $LOCK_UN = 8;
 
-    $program = basename($0);   # Who am I today, anyway? 
+    $program = basename($0);   # Who am I today, anyway?
 
     $expand_wire_prog = '/usr/local/bin/netgroup_expand';
 
@@ -203,7 +203,7 @@ sub initialize {
     if ($uname =~ /SunOS/) {
 	$max_loadavg  = 4.0;
     } elsif ($uname =~/AIX/) {
-	$max_loadavg = 30.0;  
+	$max_loadavg = 30.0;
 	$sleep_int     = 1;
     } else {
 	$max_loadavg  = 4.0;
@@ -222,13 +222,13 @@ sub initialize {
 
     # Command to use for rsh-like sequences. This may be overwritten
     # with say 'timeout.pl -t 120 rsh'
-    $ssh = '/usr/bin/ssh';   
+    $ssh = '/usr/bin/ssh';
     $ssh_opts='-o BatchMode=yes -o FallBackToRsh=yes -o ConnectionAttempts=5 '.
   	      '-o ForwardX11=no -o StrictHostKeyChecking=no';
 
     # Command to use for scp-like sequences. This may be overwritten
     # with say 'timeout.pl -t 300 rsh'
-    $rcp = '/usr/bin/scp';   
+    $rcp = '/usr/bin/scp';
 
     $tar = '/bin/tar';
 
@@ -241,7 +241,7 @@ sub process_options {
 
     use Getopt::Long;
     $Getopt::Long::autoabbrev = 1;
-    
+
     $result = &GetOptions
 	(
 	 'a',  \$opt_a,
@@ -290,23 +290,23 @@ sub process_options {
     $opt_timeout = 60
 	if !defined($timeout) || $timeout==0;
 
-    # Show a short usage if either an invalid argument was given or 
+    # Show a short usage if either an invalid argument was given or
     &short_usage if !$result;
 
     # If $expand_wire_prog's not around, don't try to call it.
     $opt_nohostcheck ||= ! -x $expand_wire_prog;
-    
+
     # $opt_z implies $opt_p. Could also add tests where $opt_p is used, but
     # this is probably more robust.
     $opt_sequential = 1;
     $opt_z=1 if ! $opt_sequential && ! $opt_p;
     $opt_p ||= $opt_z;
-    
-    # Show supplied arguments? 
+
+    # Show supplied arguments?
     if ($opt_a) {
 	foreach $opt (@options) {
 	    if ( $opt =~ /^(\w*)/ ) {
-		$cmd = 
+		$cmd =
 		    sprintf('print("-%-13s:<$opt_%s>\n") if defined($opt_%s);',
 			    $1, $1, $1);
 		eval($cmd);
@@ -319,16 +319,16 @@ sub process_options {
 	    $cnt++;
 	}
     }
-    
+
     usage() if $help;			# 'help' requested
 
     $cnt = ($opt_rsh ne '') + ($opt_exec2 ne '') + ($opt_lcmdf ne '')
 	+ ($opt_scp ne '') + ($opt_tarf ne '')  + ($opt_cmds  ne '')
-	+ ($opt_tar_install ne '') + ($opt_tar ne '') + ($opt_rpm ne ''); 
+	+ ($opt_tar_install ne '') + ($opt_tar ne '') + ($opt_rpm ne '');
     die "Need exactly one of -ssh, -exec2, -tarf, -cmds, -tar_install, "
         . "-tar, or -lcmdf option ($cnt),\nor -rsh -exec2 with -tarf.\n"
     unless ($cnt == 1) || ($cnt==2 && $opt_tarf ne '');
-    die "-rcmdf requires -lcmdf or -scp\n" 
+    die "-rcmdf requires -lcmdf or -scp\n"
 	if $opt_rcmdf && !($opt_lcmdf || $opt_scp);
     die "-nrsh requires -rcmdf\n" if $opt_nrsh  && !$opt_rcmdf;
     die "-args requires -lcmdf\n" if $opt_args  && !$opt_lcmdf;
@@ -338,7 +338,7 @@ sub process_options {
     if ($opt_logf) {
 	close(STDOUT)
 	    || die "Close failed for STDOUT: $!\n";
-	open(STDOUT, ">$opt_logf") 
+	open(STDOUT, ">$opt_logf")
 	    || die "Open failed for log file $opt_logf for writing: $!\n";
 	select(STDOUT); $| = 1; # Make unbuffered
     }
@@ -346,22 +346,22 @@ sub process_options {
     # error hostfile specified?
 
     if ($opt_errhostf) {
-	open(ERRHOSTF, ">$opt_errhostf") || 
+	open(ERRHOSTF, ">$opt_errhostf") ||
 	    die "Open failed for log file $opt_errhostf for writing: $!\n";
     }
 
-    $max_loadavg = $opt_loadavg 
+    $max_loadavg = $opt_loadavg
 	if $opt_loadavg;	# Maybe nobody reads code?
 
     # $scp = "timeout.pl -t $timeout $scp" if $timeout;
     # $ssh = "timeout.pl -t $timeout $ssh" if $timeout;
 
     # Command file specified ?
-    # This is done before other things that add to @CMDS, since we'll blast 
+    # This is done before other things that add to @CMDS, since we'll blast
     # @CMDS.
     if ($opt_cmds) {
 	filetest($opt_cmds);
-	open(CMDFILE, "<$opt_cmds") 
+	open(CMDFILE, "<$opt_cmds")
 	    || die "Open failed for reading command file $opt_cmds: $!\n";
 	while (<CMDFILE>) {
 	    next if /^#/;
@@ -391,7 +391,7 @@ sub process_options {
     process_rpm($opt_rpm) if ($opt_rpm);
 
     # local command file specified ?
-    
+
     if ($opt_lcmdf) {
 	filetest($opt_lcmdf);
 	die "Not an executable file: $opt_lcmdf.\n" if ! -x $opt_lcmdf;
@@ -402,7 +402,7 @@ sub process_options {
 	    else                            { $opt_rcmdf .= $opt_lcmdf }
 	}
 	push(@CMDS,'$rcp -p $ssh_opts $opt_lcmdf $host:$opt_rcmdf');
-	
+
 	if ($opt_args) {
 	    push(@CMDS,('$ssh $ssh_opts $host $opt_rcmdf $opt_args',
 			'$ssh $ssh_opts $host rm $opt_rcmdf'))
@@ -413,25 +413,25 @@ sub process_options {
 		if !$opt_nrsh;
 	}
     }
-    
+
     # scp specified ?
-    
+
     if ($opt_scp) {
 	$opt_lcmdf = $opt_scp;
 	$opt_rcmdf = $opt_lcmdf if !$opt_rcmdf;
 	filetest($opt_lcmdf);
 	push(@CMDS,'$rcp -p $ssh_opts $opt_lcmdf ${host}:${opt_rcmdf}');
     }
-    
+
     # 'wirecodes and/or hosts' file specified
-    
+
     if (@opt_hostf) {
 	foreach my $opt_hostf (@opt_hostf) {
 	    @HOST_FILES = split(/[, \t\n]+/, $opt_hostf);
 	    push(@CPUS, read_config_files(@HOST_FILES));
 	}
     }
-    
+
     # collect commands for -rsh or -exec2
     # Note for -install to work this has to come after -tarf.
 
@@ -441,7 +441,7 @@ sub process_options {
 		    split(/$opt_cmdsep/o,$opt_exec2)));
     }
 
-    if ($opt_mbuf) { 
+    if ($opt_mbuf) {
 	if ($opt_mbuf <= 0 || $opt_mbuf >= 100) {
 	    warn "mbuf percent value should be between 0 and 100. Keeping default value $max_mbuf_pct\n";
 	} else {
@@ -455,9 +455,9 @@ sub process_options {
 	    push (@CPUS, $arg);
 	} else {
 	    # Hope it's something $expand_wire_prog understands
-	    $wires = ($wires) ? "$wires $arg" : $arg; 
+	    $wires = ($wires) ? "$wires $arg" : $arg;
 	}
-    } 
+    }
 }
 
 sub reap_kids {
@@ -466,8 +466,8 @@ sub reap_kids {
     $exists = waitpid($PIDS[$i],1); # 1 is NOHANG
     if ($exists == -1) {
       splice(@PIDS,$i,1);
-    } 
-    else { 
+    }
+    else {
       $i++;
     }
   }
@@ -484,7 +484,7 @@ sub log_print {
 }
 
 # --------------------------------------------------------------------------
-# Expand wire code into list of remote hosts. 
+# Expand wire code into list of remote hosts.
 # --------------------------------------------------------------------------
 
 sub expand_wire {
@@ -524,11 +524,11 @@ Simple switches:
    -t                -- terse. Don't show host separator bar or give a message
                         when a command completes with an error return.
    -verbose          -- verbose. Show 'rsh' and 'scp'.
-   -z                -- execute in parallel but this program stays the 
+   -z                -- execute in parallel but this program stays the
                         parent and terminates only after all of its kids.
 			Use this option if you want to make sure all output
-			is done by the time this program completes, or 
-			if you need to know when all commands have been 
+			is done by the time this program completes, or
+			if you need to know when all commands have been
  		        executed. This may occur if this program is executed
 			from another.
    -nohostcheck      -- don't verify hostnames
@@ -548,7 +548,7 @@ Simple switches:
    {-rsh | -ssh | -sh } <cmds>
    -rpm  <rpm-file>
    -scp <local-file> [-rcmdf <remote-cmdfile>]
-                     -- copy <cmdfile> to <remote-cmdfile> 
+                     -- copy <cmdfile> to <remote-cmdfile>
    -lcmdf <cmdfile> [-rcmdf <remote-cmdfile>] [-args <arguments>]
                      -- copy <cmdfile> to <remote-cmdfile> and execute
                         supplying <arguments>
@@ -559,7 +559,7 @@ Simple switches:
                         in other words, untar a tar file to \$host
    -tar   <directory> -- tar -cvpf- <directory> | \"rsh \$host 'cd / && tar -xvpf -'\"
                         in other words, untar a tar file to \$host
-   -tar_install <tar-file> -- cat <tar-file> | 
+   -tar_install <tar-file> -- cat <tar-file> |
                           \"rsh \$host 'cd / && tar -xvpf - &&/tmp/<tar-file-ex>'\"
                         in other words, untar a tar file to \$host
 
@@ -602,14 +602,14 @@ Execute mode
          the -cmdsep argument.
 
    -rsh   'cmds' -- Execute *cmds* on the specified hosts. In other words
-                    foreach *host* : 
+                    foreach *host* :
                       rsh \$host *cmds*
    -exec2 'cmds' -- Like -rsh but with more flexibility in what to do.
-                    No implied rsh is done, you may supply that yourself. The 
+                    No implied rsh is done, you may supply that yourself. The
                     variable \$host will be substituted for a host.
 
                     For example, to run the shell commands in cmds.sh
- 
+
    $program -exec2 'cat cmds.sh | rsh \$host 'sh -' cpu10.so
 
 Note:
@@ -617,7 +617,7 @@ Note:
 1. Switches -rsh, -rcp, -exec2, -lcmdf, -tarf, -tar and -tar_install
 are mutually exclusive.
 
-Examples: 
+Examples:
 
 1. To glean the non-macho users sitting at a given workstation try:
       $program -p -hostf /u/rocky/work/drc.sites -rsh who
@@ -631,21 +631,21 @@ Examples:
 2. To get some statistics about servers sa, bonzo, and filesvr, try this:
       $program -rsh 'uptime;pstat -s;vmstat;iostat' sa bonzo filesvr
 
-   In contrast to Example 1. the invocations are not done in parallel: 
-   first sa is tried; after that completes bonzo is tried and after that 
+   In contrast to Example 1. the invocations are not done in parallel:
+   first sa is tried; after that completes bonzo is tried and after that
    completes filesvr.
 
 3. To blast out home-opcuser.tar to the cpu27 sites and log the results:
       $program -z -logf /tmp/opcuser.log -tarf 'home-opcuser.tar' cpu27
 
-   The -z option ensures that f this is called from another program the 
+   The -z option ensures that f this is called from another program the
    log file will be complete before $program returns.
 
 4. To execute script 'fix_io.ksh' on all branch servers:
       $program -lcmdf /u/rocky/work-cmds/fix_io.ksh -rcmdf /tmp/ -hostf /usr/local/dns/branch_servers
 
-   Since the name -rcmdf ends in a slash (/tmp/) it is taken to be 
-   directory name. Therefore the file /u/rocky/work-cmds/fix_io.ksh 
+   Since the name -rcmdf ends in a slash (/tmp/) it is taken to be
+   directory name. Therefore the file /u/rocky/work-cmds/fix_io.ksh
    is copied to \$host:/tmp/fix_io.ksh. However '-rcmdf /tmp/' may also be
    omitted since it is the default.
 
@@ -659,7 +659,7 @@ Examples:
    $program -scp -z /.rhost -rcmdf /.rhost:/'
 ";
 exit 100
-} # usage 
+} # usage
 
 # --------------------------------------------------------------------------
 # Execute a command unless $opt_n. If the command is executed,
@@ -701,11 +701,11 @@ sub do_cpu {
 	if !$opt_t;
 
     # Do 'major options', excluding -rsh, here
-    if ( $opt_exec2 || $opt_tarf || $opt_tar || $opt_rcmdf || $opt_cmds 
+    if ( $opt_exec2 || $opt_tarf || $opt_tar || $opt_rcmdf || $opt_cmds
 	 || $opt_rpm ) {
 	# Interpret variable references in @CMDS
 	foreach ( @CMDS ) {
-	    # Assigning $_ modifies the entry in @CMDS. 
+	    # Assigning $_ modifies the entry in @CMDS.
 	    # So use another variable to store the substituted command.
 	    $eval_cmd = $_;
 	    $eval_cmd =~ s/"/\\"/g;
@@ -759,10 +759,10 @@ sub read_config_files {
 	my $globbed_file = $config_file;
 	if (! -T $globbed_file) {
 	    # Enbugger->stop;
-	    die "Not a text file: $globbed_file." 
+	    die "Not a text file: $globbed_file."
 	}
 	# Read the data ignoring blank and comment lines.
-	open(my $fh, "<$globbed_file") || 
+	open(my $fh, "<$globbed_file") ||
 	    die "Cannot open configuration file $globbed_file for reading: $!\n";
 	while (<$fh>) {
 	    next if /^#/ || /^\s*$/;
@@ -777,11 +777,11 @@ sub read_config_files {
 	    }
 	    chomp;
 	    $hostname=(split(/\s+/))[0];
-	    push (@ITEMS, $hostname), next 
+	    push (@ITEMS, $hostname), next
 		if $opt_nohostcheck || $opt_nopattern || gethostbyname($hostname);
 
 	    # Hope it's something $expand_wire_prog understands
-	    $wires .= " $hostname"; 
+	    $wires .= " $hostname";
 	}
 	# For now no substitutions, so use command file as-is.
 	close($fh) || die "close failed for $globbed_file: $!\n";
@@ -794,9 +794,9 @@ sub syslog_msg {
 
     if (!$logopened) {
 	$logopened++;
-	do openlog($program,'cons,pid', 'err');
+	openlog($program,'cons,pid', 'err');
     }
-    do syslog('info', $msg);
+    syslog('info', $msg);
 }
 
 sub get_NIS_domains_or_hosts {
@@ -833,7 +833,7 @@ sub mygethostbyname {
     if (!$found) {
 	# Now try NIS
 	@yphosts = `/usr/bin/ypcat hosts` if !@yphosts;
-	if (@yphosts) { 
+	if (@yphosts) {
 	    @matches = grep(/^[^#]+\s+$host\s+(#)?/, @yphosts);
 	    if (@matches > 0) {
 		$found = $matches[0];
@@ -846,7 +846,7 @@ sub mygethostbyname {
 }
 
 #
-# Check integrity of tar file and if okay add commands to untar across the 
+# Check integrity of tar file and if okay add commands to untar across the
 # network.
 #
 sub process_tarf {
@@ -871,32 +871,32 @@ sub process_tarf {
 	$ex = "/tmp/$ex.install";
 	push (@CMDS,
         # "cat $tar_file|$ssh $ssh_opts \$host \"cd / && $tar_cmd && $ex ;" .
-	#       " rm $ex\""); 
+	#       " rm $ex\"");
 	      "$rcp -p $ssh_opts $tar_file \${host}:/tmp/ && $ssh $ssh_opts \$host \"/usr/local/bin/rocky-tar-install /tmp/$short_tar\"");
     } else {
 	push (@CMDS,
-	      "cat $tar_file | $ssh $ssh_opts \$host \"cd / && $tar_cmd\""); 
+	      "cat $tar_file | $ssh $ssh_opts \$host \"cd / && $tar_cmd\"");
     }
 }
 
 #
-# Check integrety of tar file and if okay add commands to untar across the 
+# Check integrety of tar file and if okay add commands to untar across the
 # network.
 #
 sub process_tar {
     my($dir) = @_;
-    chdir $dir || die "Can't cd to directory, $dir: $!\n"; 
+    chdir $dir || die "Can't cd to directory, $dir: $!\n";
     $tar_in = '$tar -cpf-';
     $tar_out = '$tar -xpf-';
     push (@CMDS,
-         "cd / && $tar_in $dir | $ssh $ssh_opts \$host \"cd / && $tar_out\""); 
+         "cd / && $tar_in $dir | $ssh $ssh_opts \$host \"cd / && $tar_out\"");
 }
 
 #
-# Check integrity of tar file and if okay add commands to untar across the 
+# Check integrity of tar file and if okay add commands to untar across the
 # network.
 #
-sub process_rpm($) 
+sub process_rpm($)
 {
     my($rpm_file) = @_;
     filetest($rpm_file);
@@ -904,9 +904,9 @@ sub process_rpm($)
     # Check rpm file for integrety
     # my $output = `/usr/bin/file $rpm_file 2>&1`;
     # die "File: $rpm_file, invalid rpm file. file reports:\n($!)\n" if $? >> 8;
-    my $cmd = 
+    my $cmd =
 	"$rcp -p $rpm_file \${host}:/tmp/ && " .
-	"$ssh $ssh_opts \$host 'rpm -Uvh /tmp/$short_rpm_file'"; 
+	"$ssh $ssh_opts \$host 'rpm -Uvh /tmp/$short_rpm_file'";
     push @CMDS, $cmd;
 }
 
@@ -917,7 +917,7 @@ sub finish {
 	print ERRHOSTF "$host\n";
     }
     print_to_log();
-    exit $exitrc; 
+    exit $exitrc;
 }
 
 sub install_trap_handlers {
